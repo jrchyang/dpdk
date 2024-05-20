@@ -29,6 +29,10 @@ rte_eal_wait_lcore(unsigned worker_id)
  * Send a message to a worker lcore identified by worker_id to call a
  * function f with argument arg. Once the execution is done, the
  * remote lcore switches to WAIT state.
+ *
+ * 第一个参数 - 从线程，即被征兆的线程
+ * 第二个参数 - 传递给从线程的参数
+ * 第三个参数 - 逻辑核 ID，被征兆的线程将运行在该核上
  */
 int
 rte_eal_remote_launch(lcore_function_t *f, void *arg, unsigned int worker_id)

@@ -962,7 +962,26 @@ out:
 	return ret;
 }
 
-/* Launch threads, called at application init(). */
+/**
+ * Launch threads, called at application init().
+ * 读取入口参数，解析并保存作为 DPDK 运行的系统信息，依赖这些信息，
+ * 构建一个针对包处理设计的运行环境，主要包括：
+ *   配置初始化
+ *   内存初始化
+ *   内存池初始化
+ *   队列初始化
+ *   告警初始化
+ *   中断初始化
+ *   PCI 初始化
+ *   定时器初始化
+ *   检测内存本地化（NUMA）
+ *   插件初始化
+ *   主线程初始化
+ *   轮询设备初始化
+ *   建立主从线程通道
+ *   将从线程设置在等待模式
+ *   PCI 设备的探测与初始化
+ */
 int
 rte_eal_init(int argc, char **argv)
 {
