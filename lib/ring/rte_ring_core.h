@@ -65,6 +65,13 @@ enum rte_ring_sync_type {
  * structures to hold a pair of head/tail values and other metadata.
  * Depending on sync_type format of that structure might be different,
  * but offset for *sync_type* and *tail* values should remain the same.
+ *
+ * prod.head : 生产者头指针，代表下一次生产时的起始位置
+ * prod.tail : 生产者尾指针，代表消费者可以消费的位置界限，到达该位置后无法继续消费
+ *             通常情况下 prod.head == prod.tail，意味着刚生产的元素都可以被消费
+ * cons.head : 消费者头指针，代表下一次消费时的起始消费位置
+ * cons.tail : 消费者尾指针，代表生产者可以生产的位置界限，到达该位置后无法继续生产
+ *             通常情况下 cons.head == cons.tail，意味着刚消费的位置都可以被生产
  */
 struct rte_ring_headtail {
 	volatile RTE_ATOMIC(uint32_t) head;      /**< prod/consumer head. */
@@ -119,19 +126,22 @@ struct rte_ring_hts_headtail {
  */
 struct rte_ring {
 	alignas(RTE_CACHE_LINE_SIZE) char name[RTE_RING_NAMESIZE];
-	/**< Name of the ring. */
-	int flags;               /**< Flags supplied at creation. */
+				/* 环形队列名称 */
+	int flags;		/* 创建时设置的标志位，用来描述队列是单/多生产者还是单/多消费者 */
 	const struct rte_memzone *memzone;
-			/**< Memzone, if any, containing the rte_ring */
-	uint32_t size;           /**< Size of ring. */
-	uint32_t mask;           /**< Mask (size-1) of ring. */
-	uint32_t capacity;       /**< Usable size of ring */
+				/* 所属的 memzone，memzone 是 dpdk 内存管理底层的数据结构 */
+	uint32_t size;		/* 队列长，为 2^n 。如果 flags 为 RING_F_EXACT_SZ
+				 * 队列 size 为初始化时队列长度的向上取整，如果不是则
+				 * 必须为 2^n
+				 */
+	uint32_t mask;		/* 掩码，为队列长-1，用于计算位置索引的时候取余使用 */
+	uint32_t capacity;	/* 可使用的元素个数 */
 
-	RTE_CACHE_GUARD;
+	RTE_CACHE_GUARD;	/* 填充结构体用于保证 cache line 对齐 */
 
 	/** Ring producer status. */
 	union __rte_cache_aligned {
-		struct rte_ring_headtail prod;
+		struct rte_ring_headtail prod;		/* 生产生头尾指针 */
 		struct rte_ring_hts_headtail hts_prod;
 		struct rte_ring_rts_headtail rts_prod;
 	};
@@ -140,7 +150,7 @@ struct rte_ring {
 
 	/** Ring consumer status. */
 	union __rte_cache_aligned {
-		struct rte_ring_headtail cons;
+		struct rte_ring_headtail cons;		/* 消费者头尾指针 */
 		struct rte_ring_hts_headtail hts_cons;
 		struct rte_ring_rts_headtail rts_cons;
 	};

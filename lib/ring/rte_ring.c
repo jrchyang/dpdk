@@ -73,6 +73,11 @@ rte_ring_get_memsize_elem(unsigned int esize, unsigned int count)
 		return -EINVAL;
 	}
 
+	/**
+	 * esize 为指针类型大小
+	 * count * size 即环形队列能保存多少个指针
+	 * sz 即用于管理指针内存的结构体 rte_ring + 其管理的指针内存的大小
+	 */
 	sz = sizeof(struct rte_ring) + (ssize_t)count * esize;
 	sz = RTE_ALIGN(sz, RTE_CACHE_LINE_SIZE);
 	return sz;
@@ -311,7 +316,14 @@ rte_ring_create_elem(const char *name, unsigned int esize, unsigned int count,
 	return r;
 }
 
-/* create the ring */
+/**
+ * create the ring
+ * 创建一个新的环形队列
+ *   name - 环形队列名称
+ *   count - 队列的大小
+ *   socket_id - 内存分配所在的 NUMA 节点
+ *   flags - 队列的标志位（如 RING_F_SP_ENQ 表示单生产者，RING_F_SC_DEQ 表示单消费者）
+ */
 struct rte_ring *
 rte_ring_create(const char *name, unsigned int count, int socket_id,
 		unsigned int flags)

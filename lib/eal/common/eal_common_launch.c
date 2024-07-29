@@ -64,6 +64,7 @@ finish:
  * Check that every WORKER lcores are in WAIT state, then call
  * rte_eal_remote_launch() for all of them. If call_main is true
  * (set to CALL_MAIN), also call the function on the main lcore.
+ * 不同的模块需要调用该函数将自己的回调函数注册到 lcore_config[].f 中
  */
 int
 rte_eal_mp_remote_launch(int (*f)(void *), void *arg,

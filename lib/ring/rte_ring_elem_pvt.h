@@ -326,13 +326,16 @@ __rte_ring_do_enqueue_elem(struct rte_ring *r, const void *obj_table,
 	uint32_t prod_head, prod_next;
 	uint32_t free_entries;
 
+	/* 移动头指针抢占生产位置 */
 	n = __rte_ring_move_prod_head(r, is_sp, n, behavior,
 			&prod_head, &prod_next, &free_entries);
 	if (n == 0)
 		goto end;
 
+	/* 写入数据 */
 	__rte_ring_enqueue_elems(r, prod_head, obj_table, esize, n);
 
+	/* 更新尾指针让消费者可以消费 */
 	__rte_ring_update_tail(&r->prod, prod_head, prod_next, is_sp, 1);
 end:
 	if (free_space != NULL)

@@ -622,7 +622,10 @@ eal_parse_huge_worker_stack(const char *arg)
 	return 0;
 }
 
-/* Parse the argument given in the command line of the application */
+/**
+ * Parse the argument given in the command line of the application
+ * 解析 -c 参数，确认哪些 CPU 核是可以使用的，以及设置第一个核为 MASTER
+ */
 static int
 eal_parse_args(int argc, char **argv)
 {
@@ -1252,6 +1255,11 @@ rte_eal_init(int argc, char **argv)
 		config->main_lcore, (uintptr_t)pthread_self(), cpuset,
 		ret == 0 ? "" : "...");
 
+	/**
+	 * 为每一个 SLAVE 核创建线程，并调用 rte_thread_set_affinity_by_id 绑定 CPU
+	 * 线程的执行体是 eal_thread_loop，eal_thread_loop 的主体是一个 while 死循环，
+	 * 调用不同模块注册到 lcore_config[lcore_id].f 的回调函数
+	 */
 	RTE_LCORE_FOREACH_WORKER(i) {
 
 		/*
